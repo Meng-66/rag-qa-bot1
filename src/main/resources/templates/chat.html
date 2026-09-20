@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档对话助手</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h2 {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        .chat-area {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            overflow: hidden;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .input-panel {
+            width: 320px;
+            background: #f8f9ff;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            border-right: 1px solid #eaeef5;
+        }
+
+        .panel-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .panel-section h5 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .file-list {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+
+        .uploaded-docs {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .uploaded-doc-item {
+            padding: 8px 12px;
+            background-color: #f0f7ff;
+            margin: 5px 0;
+            border-radius: 6px;
+            border-left: 3px solid #48bb78;
+            font-size: 0.85rem;
+        }
+
+        .uploaded-doc-name {
+            color: #2c3e50;
+            font-weight: 500;
+            margin-bottom: 2px;
+            word-break: break-all;
+        }
+
+        .uploaded-doc-time {
+            color: #718096;
+            font-size: 0.75rem;
+        }
+
+        .file-item {
+            padding: 8px 12px;
+            background-color: #f1f3f9;
+            margin: 5px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid #667eea;
+        }
+
+        .file-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.8rem;
+            color: #495057;
+        }
+
+        .remove-file {
+            color: #e74c3c;
+            cursor: pointer;
+            margin-left: 10px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .remove-file:hover {
+            background-color: #fdeded;
+            transform: scale(1.1);
+        }
+
+        .question-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            resize: vertical;
+            min-height: 120px;
+            max-height: 200px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        .question-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            background: #fafbff;
+        }
+
+        .chat-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eaeef5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h5 {
+            color: #2c3e50;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .clear-btn {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            color: #718096;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .clear-btn:hover {
+            background: #fed7d7;
+            color: #e53e3e;
+            border-color: #feb2b2;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-message {
+            background: white;
+            color: #2c3e50;
+            border: 1px solid #eaeef5;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-header {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+
+        .user-message .message-header {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .ai-message .message-header {
+            color: #667eea;
+        }
+
+        .typing-indicator {
+            display: none;
+            color: #667eea;
+            font-style: italic;
+            padding: 10px 15px;
+            background: white;
+            border: 1px solid #eaeef5;
+            border-radius: 18px;
+            align-self: flex-start;
+            font-size: 0.9rem;
+        }
+
+        .chat-footer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #eaeef5;
+        }
+
+        .chat-footer i {
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 0 10px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .chat-area {
+                flex-direction: column;
+            }
+
+            .input-panel {
+                width: 100%;
+                max-height: 400px;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                padding: 10px;
+            }
+
+            .input-panel {
+                padding: 15px;
+            }
+
+            .message {
+                max-width: 95%;
+                padding: 12px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="header">
+        <h2><i class="fas fa-comments"></i> 📄 文档对话助手</h2>
+        <p>上传文档并与AI进行智能对话</p>
+    </div>
+
+    <div class="chat-area">
+        <!-- 左侧输入面板 -->
+        <div class="input-panel">
+            <div class="panel-section">
+                <h5><i class="fas fa-file-upload"></i> 上传文档</h5>
+                <div class="file-input-wrapper">
+                    <label class="file-input-label">
+                        <i class="fas fa-cloud-upload-alt"></i> 选择文件
+                    </label>
+                    <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png">
+                </div>
+                <div class="file-list" id="fileList">
+                    <!-- 上传的文件会显示在这里 -->
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h5><i class="fas fa-folder-open"></i> 已上传文档</h5>
+                <div class="uploaded-docs" id="uploadedDocs">
+                    <p style="color: #999; font-size: 0.85rem;">暂无上传文档</p>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h5><i class="fas fa-question-circle"></i> 输入问题</h5>
+                <textarea
+                        class="question-input"
+                        id="questionInput"
+                        placeholder="请输入您关于文档内容的问题..."></textarea>
+                <button class="send-btn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i> 发送消息
+                </button>
+            </div>
+        </div>
+
+        <!-- 右侧聊天面板 -->
+        <div class="chat-panel">
+            <div class="chat-header">
+                <h5><i class="fas fa-comment-dots"></i> 对话历史</h5>
+                <button class="clear-btn" onclick="clearChat()">
+                    <i class="fas fa-trash-alt"></i> 清空对话
+                </button>
+            </div>
+
+            <div class="messages" id="messages">
+                <div class="message ai-message">
+                    <div class="message-header">AI 助手</div>
+                    <div class="message-content">
+                        您好！欢迎使用文档对话助手。请上传您的文档并提出相关问题，我将基于文档内容为您提供准确的回答。
+                    </div>
+                </div>
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator">
+                <i class="fas fa-circle-notch fa-spin"></i> AI 正在思考中...
+            </div>
+
+            <div class="chat-footer">
+                <i class="fas fa-robot"></i>
+                <div style="flex: 1; color: #718096; font-size: 0.85rem;">
+                    AI 助手随时为您解答关于文档内容的问题
+                </div>
+                <i class="fas fa-shield-alt"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let uploadedFiles = [];
+    const chatId = 'chat-' + Date.now(); // 生成唯一的聊天ID
+
+    // 文件选择事件监听
+    document.getElementById('fileInput').addEventListener('change', function (e) {
+        const files = Array.from(e.target.files);
+        files.forEach(file => {
+            if (!uploadedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                uploadedFiles.push(file);
+                displayFile(file);
+            }
+        });
+        // 清空文件输入，允许重复选择相同文件
+        e.target.value = '';
+    });
+
+    // 显示已选择的文件
+    function displayFile(file) {
+        const fileList = document.getElementById('fileList');
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `
+                <div class="file-name" title="${file.name}">
+                    <i class="fas fa-file"></i> ${file.name}
+                </div>
+                <span class="remove-file" onclick="removeFile('${file.name}', ${file.size})">
+                    <i class="fas fa-times"></i>
+                </span>
+            `;
+        fileList.appendChild(fileItem);
+    }
+
+    // 移除文件
+    function removeFile(name, size) {
+        uploadedFiles = uploadedFiles.filter(file => !(file.name === name && file.size === size));
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = '';
+        uploadedFiles.forEach(displayFile);
+    }
+
+    // 发送消息
+    async function sendMessage() {
+        const question = document.getElementById('questionInput').value.trim();
+        if (!question) {
+            alert('请输入问题');
+            return;
+        }
+
+        // 显示用户消息
+        addUserMessage(question);
+        document.getElementById('questionInput').value = '';
+
+        // 显示打字指示器
+        document.getElementById('typingIndicator').style.display = 'block';
+
+        // 创建FormData对象，包含问题和文件
+        const formData = new FormData();
+        formData.append('question', question);
+
+        uploadedFiles.forEach((file, index) => {
+            formData.append(`files`, file);
+        });
+
+        try {
+            // 使用fetch发送POST请求到聊天API
+            const response = await fetch(`/api/chat/${chatId}`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // 检查响应是否为流式响应
+            if (!response.body) {
+                throw new Error('ReadableStream not supported');
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let aiResponse = ''; // 用于跟踪累积的AI响应内容
+
+            // 添加AI消息容器
+            const aiMessageDiv = createAiMessageElement();
+            const contentDiv = aiMessageDiv.querySelector('.message-content');
+            document.getElementById('messages').appendChild(aiMessageDiv);
+
+            // 用于缓存未完成的SSE行
+            let buffer = '';
+
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                // 将缓冲区内容与新内容合并
+                const combinedChunk = buffer + chunk;
+                
+                // 使用正则表达式来查找完整的行（以 \n 或 \r\n 结尾）
+                const lines = combinedChunk.split(/\r?\n/);
+                
+                // 保留最后一个可能不完整的行在缓冲区中（即没有行结束符的行）
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    if (line.startsWith('data:')) {
+                        const data = line.slice(5);
+                        if (data !== '[DONE]' && data !== '') {
+                            // 安全地转义HTML字符以防止XSS攻击，并处理换行符
+                            const escapedData = escapeHtml(data);
+                            console.log('接收到的返回内容是：', escapedData);
+
+                            // 直接追加新内容，而不是替换整个内容
+                            contentDiv.insertAdjacentHTML('beforeend', escapedData);
+                            
+                            // 同时更新aiResponse变量以跟踪累积内容
+                            aiResponse += data; // 注意这里使用原始数据，因为aiResponse是用于检查是否为空的
+
+                            // 自动滚动到底部
+                            const messagesDiv = document.getElementById('messages');
+                            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                        }
+                    }
+                }
+            }
+
+            // 处理缓冲区中剩余的内容（如果有）
+            if (buffer && buffer.startsWith('data:')) {
+                let data = buffer.slice(5);
+                if (data !== '[DONE]' && data !== '') {
+                    // 安全地转义HTML字符以防止XSS攻击，并处理换行符
+                    const escapedData = escapeHtml(data);
+                    console.log('接收到的返回内容是：', data);
+
+                    // 直接追加新内容，而不是替换整个内容
+                    contentDiv.insertAdjacentHTML('beforeend', escapedData);
+                    
+                    // 同时更新aiResponse变量以跟踪累积内容
+                    aiResponse += data; // 注意这里使用原始数据，因为aiResponse是用于检查是否为空的
+
+                    // 自动滚动到底部
+                    const messagesDiv = document.getElementById('messages');
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            }
+
+            // 如果AI响应为空，显示相应提示
+            if (aiResponse.trim() === '') {
+                contentDiv.innerHTML = 'AI助手暂时无法回答您的问题，请稍后重试。';
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            const errorMessage = createAiMessageElement();
+            errorMessage.querySelector('.message-content').innerHTML = '抱歉，发生了一个错误: ' + escapeHtml(error.message);
+            document.getElementById('messages').appendChild(errorMessage);
+        } finally {
+            document.getElementById('typingIndicator').style.display = 'none';
+
+            // 自动滚动到底部
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            // 清空已上传的文件列表和文件显示
+            uploadedFiles = [];
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+
+            // 刷新已上传文档列表
+            loadUploadedDocs(chatId);
+        }
+    }
+
+    // 加载已上传文档列表
+    async function loadUploadedDocs(chatId) {
+        try {
+            const response = await fetch(`/api/documents/${chatId}`);
+            const docs = await response.json();
+            const container = document.getElementById('uploadedDocs');
+
+            if (docs.length === 0) {
+                container.innerHTML = '<p style="color: #999; font-size: 0.85rem;">暂无上传文档</p>';
+                return;
+            }
+
+            container.innerHTML = docs.map(doc => `
+                <div class="uploaded-doc-item">
+                    <div class="uploaded-doc-name">
+                        <i class="fas fa-file-alt"></i> ${doc.fileName}
+                    </div>
+                    <div class="uploaded-doc-time">
+                        上传时间：${formatTime(doc.uploadTime)}
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('加载文档列表失败:', error);
+        }
+    }
+
+    // 格式化时间
+    function formatTime(timeStr) {
+        if (!timeStr) return '';
+        const date = new Date(timeStr);
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${month}-${day} ${hours}:${minutes}`;
+    }
+
+    // 转义HTML字符以防止XSS，同时处理换行符，但保留已有的<br>标签
+    function escapeHtml(text) {
+        // 先临时替换已有的<br>标签，防止它们被转义
+        const tempBrPlaceholder = '[[TEMP_BR_TAG]]';
+        const textWithPlaceholders = text.replace(/<br\s*\/?>/gi, tempBrPlaceholder);
+        
+        // 转义危险的HTML字符
+        let escapedText = textWithPlaceholders
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;');
+        
+        // 恢复<br>标签
+        escapedText = escapedText.replace(new RegExp(tempBrPlaceholder, 'g'), '<br>');
+        
+        // 将真正的换行符转换为<br>标签
+        escapedText = escapedText.replace(/\n/g, '<br>');
+        
+        return escapedText;
+    }
+
+    // 创建用户消息元素
+    function createUserMessageElement(content) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message user-message';
+        messageDiv.innerHTML = `
+                <div class="message-content">${escapeHtml(content)}</div>
+            `;
+        return messageDiv;
+    }
+
+    // 创建AI消息元素
+    function createAiMessageElement() {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message ai-message';
+        messageDiv.innerHTML = `
+                <div class="message-header">AI 助手</div>
+                <div class="message-content"></div>
+            `;
+        return messageDiv;
+    }
+
+    // 添加用户消息到聊天记录
+    function addUserMessage(content) {
+        const messagesDiv = document.getElementById('messages');
+        const messageElement = createUserMessageElement(content);
+        messagesDiv.appendChild(messageElement);
+
+        // 自动滚动到底部
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // 添加AI消息到聊天记录
+    function addAiMessage(content) {
+        const messagesDiv = document.getElementById('messages');
+        const messageElement = createAiMessageElement();
+        messageElement.querySelector('.message-content').innerHTML = escapeHtml(content);
+        messagesDiv.appendChild(messageElement);
+
+        // 自动滚动到底部
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // 清空对话
+    function clearChat() {
+        if (confirm('确定要清空所有对话记录吗？')) {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = `
+                <div class="message ai-message">
+                    <div class="message-header">AI 助手</div>
+                    <div class="message-content">
+                        您好！欢迎使用文档对话助手。请上传您的文档并提出相关问题，我将基于文档内容为您提供准确的回答。
+                    </div>
+                </div>
+            `;
+            // 生成新的聊天ID，开始新的对话
+            window.chatId = 'chat-' + Date.now();
+            // 刷新文档列表
+            loadUploadedDocs(window.chatId);
+        }
+    }
+
+    // 支持回车键发送消息（Shift+Enter换行）
+    document.getElementById('questionInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // 页面加载完成后聚焦到问题输入框
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('questionInput').focus();
+    });
+</script>
+</body>
+</html>
